@@ -7,6 +7,7 @@ sock.connect(addr)
 msg = sock.recv(1024)
 print(msg.decode())
     
+    
 sock.send('Yewon Kim'.encode())
 
 sch_num = sock.recv(1024)

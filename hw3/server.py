@@ -1,20 +1,47 @@
-import socket
+from socket import *
+import re
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(("", 9000))
-s.listen(2)
+def calculate(expression):
+    try:
+        match = re.match(r"(\d+)\s*([+\-*/])\s*(\d+)", expression)
+        if match:
+            num1 = int(match.group(1))  
+            operator = match.group(2)     
+            num2 = int(match.group(3))  
 
-sch_num = 20221301
+            if operator == "+":
+                return num1 + num2
+            elif operator == "-":
+                return num1 - num2
+            elif operator == "*":
+                return num1 * num2
+            elif operator == "/":
+                if num2 == 0:
+                    return "Error: Division by zero"
+                return round(num1 / num2, 1)
+        else:
+            return "Invalid expression"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+s = socket(AF_INET, SOCK_STREAM)
+s.bind(('', 3333))
+s.listen(1)
+print('waiting...')
 
 while True:
     client, addr = s.accept()
-    print('Connection from ', addr)
+    print('Connection from', addr)
     
-    client.send(b'Hello ' + addr[0].encode())
+    while True:
+        data = client.recv(1024)
+        if not data:
+            break
+        expression = data.decode().strip()
+        if expression.lower() == 'q':
+            break
 
-    msg = client.recv(1024)
-    print(msg.decode())
-    
-    client.send(sch_num.to_bytes(8, 'big'))
-    
+        result = calculate(expression)
+        client.send(str(result).encode())
+
     client.close()
